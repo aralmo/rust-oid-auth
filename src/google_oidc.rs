@@ -1,10 +1,8 @@
-use std::{borrow::Borrow, collections::HashMap, io::{stdout, Write}};
-
-use actix_session::{Session, SessionStatus};
-use actix_web::{dev::ConnectionInfo, error::{ErrorBadRequest, ErrorInternalServerError}, http::StatusCode, web, HttpRequest, Responder};
+use actix_session::Session;
+use actix_web::{error::{ErrorBadRequest, ErrorInternalServerError}, http::StatusCode, web, HttpRequest, Responder};
 use log::info;
 use openidconnect::{
-    core::{CoreClient, CoreProviderMetadata, CoreResponseType},
+    core::{CoreAuthPrompt, CoreClient, CoreProviderMetadata, CoreResponseType},
     reqwest::async_http_client,
     AuthenticationFlow, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
     RedirectUrl, Scope,
@@ -59,8 +57,10 @@ pub async fn login(
         CsrfToken::new_random,
         Nonce::new_random,
     );
-    authorize_data = authorize_data.add_scope(Scope::new(String::from("email")));
-    authorize_data = authorize_data.add_scope(Scope::new(String::from("profile")));
+    authorize_data = authorize_data
+        .add_scope(Scope::new(String::from("email")))
+        .add_scope(Scope::new(String::from("profile")))
+        .add_prompt(CoreAuthPrompt::SelectAccount);
     let (authorize_url, _csrf_state, nonce) = authorize_data.url();
     session
         .insert("nonce", nonce)

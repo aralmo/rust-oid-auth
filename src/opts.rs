@@ -5,4 +5,6 @@ use structopt::StructOpt;
 pub struct Options {
     #[structopt(short, long)]
     pub google: Option<Vec<String>>,
+    #[structopt(short, long)]
+    pub cookie_key : Option<String>
 }
