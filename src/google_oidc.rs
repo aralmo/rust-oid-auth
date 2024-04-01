@@ -12,23 +12,23 @@ use openidconnect::{
 use serde::Deserialize;
 
 pub struct GoogleOID {
-    pub rel_auth_url : &'static str,
+    pub rel_auth_url : String,
     pub wellknown : CoreProviderMetadata,
-    pub client_id : &'static str,
-    pub client_secret : &'static str
+    pub client_id : String,
+    pub client_secret : String
 }
 impl Clone for GoogleOID {
     fn clone(&self) -> Self {
         Self {
-            wellknown: self.wellknown.to_owned(),
-            rel_auth_url: self.rel_auth_url,
-            client_id: self.client_id,
-            client_secret : self.client_secret
+            wellknown: self.wellknown.clone(),
+            rel_auth_url: self.rel_auth_url.clone(),
+            client_id: self.client_id.clone(),
+            client_secret : self.client_secret.clone()
         }
     }
 }
 
-pub async fn discover(client_id: &'static str, client_secret: &'static str, rel_auth_url: &'static str) -> GoogleOID {
+pub async fn discover(client_id: String, client_secret: String, rel_auth_url: String) -> GoogleOID {
     let issuer = String::from("https://accounts.google.com");
     info!("discovering {}", issuer);
     let wellknown = CoreProviderMetadata::discover_async(
@@ -49,8 +49,8 @@ pub async fn login(
     let auth_url = format!("{}://{}{}", req.connection_info().scheme(),req.connection_info().host(), oidc.rel_auth_url);
     let client = CoreClient::from_provider_metadata(
         oidc.wellknown.clone(),
-        ClientId::new(String::from(oidc.client_id)),
-        Some(ClientSecret::new(String::from(oidc.client_secret))),
+        ClientId::new(oidc.client_id.clone()),
+        Some(ClientSecret::new(oidc.client_secret.clone())),
     ).set_redirect_uri(RedirectUrl::new(auth_url).expect("wrong auth url"));
 
     let mut authorize_data = client
@@ -85,8 +85,8 @@ pub async fn auth(
         let auth_url = format!("{}://{}{}", req.connection_info().scheme(),req.connection_info().host(), oidc.rel_auth_url);
         let client = CoreClient::from_provider_metadata(
             oidc.wellknown.clone(),
-            ClientId::new(String::from(oidc.client_id)),
-            Some(ClientSecret::new(String::from(oidc.client_secret))),
+            ClientId::new(oidc.client_id.clone()),
+            Some(ClientSecret::new(oidc.client_secret.clone())),
         ).set_redirect_uri(RedirectUrl::new(auth_url).expect("wrong auth url"));
 
         let token_response = client
